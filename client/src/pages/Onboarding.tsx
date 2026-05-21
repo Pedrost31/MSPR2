@@ -243,7 +243,27 @@ if(step < totalSteps){
    Daily targets
   </h3>
   <div className="space-y-6">
-    <Slider label="Daily Calorie Intake" min={120} max={4000} />
+<Slider
+  label="Daily Calorie Intake"
+  min={120}
+  max={4000}
+  step={50}
+  value={formData.dailyCalorieIntake}
+  onChange={(v) => updateField('dailyCalorieIntake', v)}
+  unit="kcal"
+  infoText="The number of calories you should consume daily"
+/>
+
+<Slider
+  label="Daily Calorie Burn"
+  min={120}
+  max={2000}
+  step={50}
+  value={formData.dailyCalorieBurn}
+  onChange={(v) => updateField('dailyCalorieBurn', v)}
+  unit="kcal"
+  infoText="The number of calories you should aim to burn daily through activity"
+/>
   </div>
   </div>
              </div>

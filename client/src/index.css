@@ -7,7 +7,7 @@
     display: none;
   }
 }
-
+@custom-variant dark (&:where(.dark, .dark *));
 *{
    font-family: "Rethink Sans", sans-serif;
 }
