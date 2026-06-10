@@ -4,7 +4,7 @@
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { quickActivities } from "../assets/assets";
-import { PlusIcon,DumbbellIcon,ActivityIcon } from "lucide-react";
+import { PlusIcon,DumbbellIcon,ActivityIcon, TimerIcon, Trash2Icon } from "lucide-react";
 import Input from "../components/ui/Input";
 import toast from 'react-hot-toast';
 import mockApi from '../assets/mockApi';
@@ -61,6 +61,21 @@ const handleQuickAdd = (activity: {name: string, rate: number})=>{
         calories:30 * activity.rate
     })
     setShowForm(true)
+}
+
+
+
+
+const handleDelete = async (documentId: string) => {
+   try {
+    const confirm = window.confirm('Are you sure you want to delete this entry?');
+    if(!confirm) return;
+    await mockApi.foodLogs.delete(documentId);
+    setAllActivityLogs(prev => prev.filter((e: ActivityEntry) => e.documentId !== documentId));
+    } catch (error: any) {
+        console.error(error)
+        toast.error('Failed to delete entry. Please try again.')
+}
 }
 
 
@@ -180,6 +195,57 @@ Today's Activies
         </p>
         </div>
         </div>
+
+<div className="space-y-2">
+{activities.map((activity)=>(
+    <div key={activity.id} className="activity-entry-item">
+<div className="flex items-center gap-3">
+<div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+<TimerIcon className="size-5 text-blue-500 dark:text-blue-400"/>
+
+</div>
+<div>
+<p className="font-medium text-slate-700 dark:text-slate-200">{activity.name}</p>
+<p className="text-sm text-slate-400">{new Date(activity?.createdAt || '').toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</p>
+</div>
+</div>
+<div className="flex items-center gap-3">
+<div className="text-right">
+    <p className="font-semibold text-slate-700 dark:text-slate-200">{activity.duration} min</p>
+<p className="text-xs text-slate-400">
+    {activity.calories} kcal
+</p>
+</div>
+<button onClick={()=>handleDelete(activity.documentId)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+    <Trash2Icon className='w-4 h-4'/>
+</button>
+
+</div>
+
+</div>
+
+
+
+
+))}
+
+
+</div>
+
+{/*Total summary */}
+<div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+
+
+<span className="text-slate-500 dark:text-slate-400">
+    Total Active Time
+</span>
+<span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+    {totalMinutes} minutes
+
+</span>
+</div>
+
+
     </Card>
 
 )}
