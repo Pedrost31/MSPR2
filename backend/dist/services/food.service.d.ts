@@ -1,0 +1,152 @@
+import { CreateFoodEntryInput, UpdateFoodEntryInput } from '../schemas/food.schema';
+export declare const createFoodEntry: (userId: string, input: CreateFoodEntryInput) => Promise<{
+    userId: string;
+    name: string;
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    calories: number;
+    protein: number | null;
+    carbs: number | null;
+    fat: number | null;
+    fiber: number | null;
+    mealType: import(".prisma/client").$Enums.MealType;
+    date: Date;
+}>;
+interface FoodFilters {
+    startDate?: string;
+    endDate?: string;
+    mealType?: string;
+    page?: number;
+    limit?: number;
+}
+export declare const getFoodEntries: (userId: string, filters: FoodFilters) => Promise<{
+    entries: {
+        userId: string;
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        calories: number;
+        protein: number | null;
+        carbs: number | null;
+        fat: number | null;
+        fiber: number | null;
+        mealType: import(".prisma/client").$Enums.MealType;
+        date: Date;
+    }[];
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+}>;
+export declare const getFoodEntryById: (id: string, userId: string) => Promise<{
+    userId: string;
+    name: string;
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    calories: number;
+    protein: number | null;
+    carbs: number | null;
+    fat: number | null;
+    fiber: number | null;
+    mealType: import(".prisma/client").$Enums.MealType;
+    date: Date;
+}>;
+export declare const updateFoodEntry: (id: string, userId: string, input: UpdateFoodEntryInput) => Promise<{
+    userId: string;
+    name: string;
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    calories: number;
+    protein: number | null;
+    carbs: number | null;
+    fat: number | null;
+    fiber: number | null;
+    mealType: import(".prisma/client").$Enums.MealType;
+    date: Date;
+}>;
+export declare const deleteFoodEntry: (id: string, userId: string) => Promise<void>;
+export declare const getDailyNutritionSummary: (userId: string, date: string) => Promise<{
+    date: string;
+    totalCalories: number;
+    totalProtein: number;
+    totalCarbs: number;
+    totalFat: number;
+    totalFiber: number;
+    byMealType: {
+        breakfast: {
+            userId: string;
+            name: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            calories: number;
+            protein: number | null;
+            carbs: number | null;
+            fat: number | null;
+            fiber: number | null;
+            mealType: import(".prisma/client").$Enums.MealType;
+            date: Date;
+        }[];
+        lunch: {
+            userId: string;
+            name: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            calories: number;
+            protein: number | null;
+            carbs: number | null;
+            fat: number | null;
+            fiber: number | null;
+            mealType: import(".prisma/client").$Enums.MealType;
+            date: Date;
+        }[];
+        dinner: {
+            userId: string;
+            name: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            calories: number;
+            protein: number | null;
+            carbs: number | null;
+            fat: number | null;
+            fiber: number | null;
+            mealType: import(".prisma/client").$Enums.MealType;
+            date: Date;
+        }[];
+        snack: {
+            userId: string;
+            name: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            calories: number;
+            protein: number | null;
+            carbs: number | null;
+            fat: number | null;
+            fiber: number | null;
+            mealType: import(".prisma/client").$Enums.MealType;
+            date: Date;
+        }[];
+    };
+    entries: {
+        userId: string;
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        calories: number;
+        protein: number | null;
+        carbs: number | null;
+        fat: number | null;
+        fiber: number | null;
+        mealType: import(".prisma/client").$Enums.MealType;
+        date: Date;
+    }[];
+}>;
+export {};
