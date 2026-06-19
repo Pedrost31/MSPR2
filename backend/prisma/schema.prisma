@@ -1,0 +1,175 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  user
+  admin
+}
+
+enum Gender {
+  male
+  female
+  other
+}
+
+enum ActivityLevel {
+  sedentary
+  light
+  moderate
+  active
+  very_active
+}
+
+enum Goal {
+  lose
+  maintain
+  gain
+}
+
+enum MealType {
+  breakfast
+  lunch
+  dinner
+  snack
+}
+
+enum ActivityType {
+  cardio
+  strength
+  flexibility
+  sports
+  other
+}
+
+model User {
+  id                 String          @id @default(uuid())
+  email              String          @unique
+  password           String
+  name               String
+  role               Role            @default(user)
+
+  age                Int?
+  weight             Float?
+  height             Float?
+  gender             Gender?
+
+  activityLevel      ActivityLevel?
+  goal               Goal?
+
+  avatarUrl          String?
+
+  dailyCalorieTarget Int?
+
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  foodEntries        FoodEntry[]
+  activityEntries    ActivityEntry[]
+  goalSettings       GoalSettings?
+  refreshTokens      RefreshToken[]
+  healthMetrics      HealthMetric[]
+}
+
+model FoodEntry {
+  id        String   @id @default(uuid())
+
+  userId    String
+
+  name      String
+  calories  Float
+
+  protein   Float?
+  carbs     Float?
+  fat       Float?
+  fiber     Float?
+
+  mealType  MealType
+
+  date      DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+}
+
+model ActivityEntry {
+  id             String       @id @default(uuid())
+
+  userId         String
+
+  name           String
+  duration       Int
+  caloriesBurned Float
+
+  type           ActivityType @default(other)
+
+  date           DateTime     @default(now())
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+}
+
+model GoalSettings {
+  id                  String   @id @default(uuid())
+
+  userId              String   @unique
+
+  dailyCalorieTarget  Int      @default(2000)
+  dailyProteinTarget  Float?
+  dailyCarbsTarget    Float?
+  dailyFatTarget      Float?
+
+  weeklyWorkoutTarget Int      @default(3)
+
+  targetWeight        Float?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model HealthMetric {
+  id         String   @id @default(uuid())
+
+  userId     String
+
+  weight     Float?
+  bmi        Float?
+  bodyFat    Float?
+
+  measuredAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, measuredAt])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+
+  userId    String
+
+  token     String   @unique
+
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(curl -s http://localhost:11434/api/tags 2>&1)"
+    ]
+  }
+}

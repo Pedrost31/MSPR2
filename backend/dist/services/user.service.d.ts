@@ -1,0 +1,41 @@
+import { UpdateUserInput } from '../schemas/user.schema';
+export declare const getUserById: (userId: string) => Promise<{
+    email: string;
+    goalSettings: {
+        userId: string;
+        id: string;
+        dailyCalorieTarget: number;
+        createdAt: Date;
+        updatedAt: Date;
+        dailyProteinTarget: number | null;
+        dailyCarbsTarget: number | null;
+        dailyFatTarget: number | null;
+        weeklyWorkoutTarget: number;
+        targetWeight: number | null;
+    } | null;
+    name: string;
+    age: number | null;
+    weight: number | null;
+    height: number | null;
+    gender: import(".prisma/client").$Enums.Gender | null;
+    activityLevel: import(".prisma/client").$Enums.ActivityLevel | null;
+    goal: import(".prisma/client").$Enums.Goal | null;
+    id: string;
+    dailyCalorieTarget: number | null;
+    createdAt: Date;
+    updatedAt: Date;
+}>;
+export declare const updateUser: (userId: string, input: UpdateUserInput) => Promise<{
+    email: string;
+    name: string;
+    age: number | null;
+    weight: number | null;
+    height: number | null;
+    gender: import(".prisma/client").$Enums.Gender | null;
+    activityLevel: import(".prisma/client").$Enums.ActivityLevel | null;
+    goal: import(".prisma/client").$Enums.Goal | null;
+    id: string;
+    dailyCalorieTarget: number | null;
+    updatedAt: Date;
+}>;
+export declare const deleteUser: (userId: string) => Promise<void>;

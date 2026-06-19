@@ -1,0 +1,68 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: healthai-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  api-food-recognition:
+    build:
+      context: .
+      dockerfile: api1_food_recognition/Dockerfile
+    container_name: healthai-food-recognition
+    ports:
+      - "8001:8001"
+    env_file: .env
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  api-recipe-suggestions:
+    build:
+      context: .
+      dockerfile: api2_recipe_suggestions/Dockerfile
+    container_name: healthai-recipe-suggestions
+    ports:
+      - "8002:8002"
+    env_file: .env
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  api-diet-plan:
+    build:
+      context: .
+      dockerfile: api3_diet_plan/Dockerfile
+    container_name: healthai-diet-plan
+    ports:
+      - "8003:8003"
+    env_file: .env
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  api-training-program:
+    build:
+      context: .
+      dockerfile: api4_training_program/Dockerfile
+    container_name: healthai-training-program
+    ports:
+      - "8004:8004"
+    env_file: .env
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
