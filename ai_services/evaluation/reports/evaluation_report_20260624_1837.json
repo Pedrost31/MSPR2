@@ -1,0 +1,297 @@
+{
+  "generated_at": "2026-06-24 18:37",
+  "availability": {
+    "metric": "API Availability",
+    "apis_checked": 4,
+    "all_available": false,
+    "details": [
+      {
+        "api": "API 1 – Food Recognition",
+        "service": "food-recognition",
+        "url": "http://localhost:8001/health",
+        "checks": 3,
+        "up_count": 0,
+        "availability_pct": 0.0,
+        "avg_latency_ms": 0.0
+      },
+      {
+        "api": "API 2 – Recipe Suggestions",
+        "service": "recipe-suggestions",
+        "url": "http://localhost:8002/health",
+        "checks": 3,
+        "up_count": 0,
+        "availability_pct": 0.0,
+        "avg_latency_ms": 0.0
+      },
+      {
+        "api": "API 3 – Diet Plan",
+        "service": "diet-plan",
+        "url": "http://localhost:8003/health",
+        "checks": 3,
+        "up_count": 0,
+        "availability_pct": 0.0,
+        "avg_latency_ms": 0.0
+      },
+      {
+        "api": "API 4 – Training Program",
+        "service": "training-program",
+        "url": "http://localhost:8004/health",
+        "checks": 3,
+        "up_count": 0,
+        "availability_pct": 0.0,
+        "avg_latency_ms": 0.0
+      }
+    ]
+  },
+  "food_search": {
+    "metric": "Food Search (Open Food Facts + USDA)",
+    "total_queries": 12,
+    "true_positives": 0,
+    "false_positives": 0,
+    "false_negatives": 12,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1_score": 0.0,
+    "avg_latency_ms": 0.0,
+    "error_count": 12,
+    "error_rate_pct": 100.0,
+    "details": [
+      {
+        "query": "apple",
+        "found": false,
+        "correct_at_1": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      },
+      {
+        "query": "chicken",
+        "found": false,
+        "correct_at_1": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      },
+      {
+        "query": "salmon",
+        "found": false,
+        "correct_at_1": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      },
+      {
+        "query": "banana",
+        "found": false,
+        "correct_at_1": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      },
+      {
+        "query": "broccoli",
+        "found": false,
+        "correct_at_1": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      },
+      {
+        "query": "rice",
+        "found": false,
+        "correct_at_1": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      },
+      {
+        "query": "egg",
+        "found": false,
+        "correct_at_1": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      },
+      {
+        "query": "yogurt",
+        "found": false,
+        "correct_at_1": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      },
+      {
+        "query": "avocado",
+        "found": false,
+        "correct_at_1": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      },
+      {
+        "query": "oats",
+        "found": false,
+        "correct_at_1": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      },
+      {
+        "query": "tomato",
+        "found": false,
+        "correct_at_1": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      },
+      {
+        "query": "pasta",
+        "found": false,
+        "correct_at_1": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      }
+    ]
+  },
+  "food_barcode": {
+    "metric": "Barcode Lookup (Open Food Facts)",
+    "total_lookups": 3,
+    "correct": 0,
+    "precision": 0.0,
+    "avg_latency_ms": 0.0,
+    "error_count": 3,
+    "details": [
+      {
+        "barcode": "3017620422003",
+        "found": false,
+        "correct": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      },
+      {
+        "barcode": "3228857000166",
+        "found": false,
+        "correct": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      },
+      {
+        "barcode": "5449000000996",
+        "found": false,
+        "correct": false,
+        "error": "API non disponible",
+        "latency_ms": 0
+      }
+    ]
+  },
+  "diet_coherence": {
+    "metric": "Diet Plan Coherence (TDEE Calculator)",
+    "total_profiles": 6,
+    "coherent_count": 6,
+    "unsafe_count": 0,
+    "coherence_rate_pct": 100.0,
+    "unsafe_rate_pct": 0.0,
+    "details": [
+      {
+        "label": "Homme 30 ans – Perte de poids",
+        "goal": "lose",
+        "bmr": 1749.0,
+        "tdee": 2711.0,
+        "target_calories": 2211.0,
+        "protein_g": 128.0,
+        "carbs_g": 262.8,
+        "fat_g": 72.0,
+        "protein_pct": 23.2,
+        "carbs_pct": 47.5,
+        "fat_pct": 29.3,
+        "macro_pct_sum": 100.0,
+        "is_coherent": true,
+        "is_safe_calories": true,
+        "is_safe_protein": true,
+        "is_balanced": true
+      },
+      {
+        "label": "Homme 25 ans – Prise de masse",
+        "goal": "gain",
+        "bmr": 1705.0,
+        "tdee": 2941.0,
+        "target_calories": 3241.0,
+        "protein_g": 140.0,
+        "carbs_g": 528.5,
+        "fat_g": 63.0,
+        "protein_pct": 17.3,
+        "carbs_pct": 65.2,
+        "fat_pct": 17.5,
+        "macro_pct_sum": 100.0,
+        "is_coherent": true,
+        "is_safe_calories": true,
+        "is_safe_protein": true,
+        "is_balanced": true
+      },
+      {
+        "label": "Femme 35 ans – Maintien",
+        "goal": "maintain",
+        "bmr": 1295.0,
+        "tdee": 1781.0,
+        "target_calories": 1781.0,
+        "protein_g": 108.0,
+        "carbs_g": 215.8,
+        "fat_g": 54.0,
+        "protein_pct": 24.3,
+        "carbs_pct": 48.5,
+        "fat_pct": 27.3,
+        "macro_pct_sum": 100.1,
+        "is_coherent": true,
+        "is_safe_calories": true,
+        "is_safe_protein": true,
+        "is_balanced": true
+      },
+      {
+        "label": "Femme 45 ans – Perte de poids sédentaire",
+        "goal": "lose",
+        "bmr": 1576.0,
+        "tdee": 1892.0,
+        "target_calories": 1392.0,
+        "protein_g": 144.0,
+        "carbs_g": 21.8,
+        "fat_g": 81.0,
+        "protein_pct": 41.4,
+        "carbs_pct": 6.2,
+        "fat_pct": 52.4,
+        "macro_pct_sum": 100.0,
+        "is_coherent": true,
+        "is_safe_calories": true,
+        "is_safe_protein": true,
+        "is_balanced": true
+      },
+      {
+        "label": "Homme 22 ans – Prise de masse très actif",
+        "goal": "gain",
+        "bmr": 1620.0,
+        "tdee": 3078.0,
+        "target_calories": 3378.0,
+        "protein_g": 130.0,
+        "carbs_g": 582.9,
+        "fat_g": 58.5,
+        "protein_pct": 15.4,
+        "carbs_pct": 69.0,
+        "fat_pct": 15.6,
+        "macro_pct_sum": 100.0,
+        "is_coherent": true,
+        "is_safe_calories": true,
+        "is_safe_protein": true,
+        "is_balanced": true
+      },
+      {
+        "label": "Femme 28 ans – Maintien modéré",
+        "goal": "maintain",
+        "bmr": 1262.0,
+        "tdee": 1955.0,
+        "target_calories": 1955.0,
+        "protein_g": 99.0,
+        "carbs_g": 278.4,
+        "fat_g": 49.5,
+        "protein_pct": 20.3,
+        "carbs_pct": 57.0,
+        "fat_pct": 22.8,
+        "macro_pct_sum": 100.1,
+        "is_coherent": true,
+        "is_safe_calories": true,
+        "is_safe_protein": true,
+        "is_balanced": true
+      }
+    ]
+  },
+  "training": {
+    "error": "Ignoré (--skip-ollama)"
+  }
+}

@@ -1,11 +1,13 @@
 import sys
 import os
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from routes.training import router as training_router
+from routes.metrics import router as metrics_router
 
 
 @asynccontextmanager
@@ -24,6 +26,7 @@ app = FastAPI(
 )
 
 app.include_router(training_router, prefix="/api/v4/training", tags=["Training Program"])
+app.include_router(metrics_router, prefix="/api/v4", tags=["Metrics"])
 
 
 @app.get("/health")
