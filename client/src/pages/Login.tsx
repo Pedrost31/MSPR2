@@ -14,16 +14,22 @@ import { Toaster } from 'react-hot-toast';
     const navigate = useNavigate();
     const {login,signup,user}=useAppContext();
 
-    const handleSubmit = async (e:React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        if(state === 'login') {
-            await login ({email,password})
-        } else {
-            await signup({username,email,password})
-        }
-        setIsSubmitting(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+
+  try {
+    if (state === "login") {
+      await login({ email, password });
+    } else {
+      await signup({ username, email, password });
     }
+  } catch (e) {
+    // erreur déjà gérée par toast dans context
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
     useEffect(()=>{
         if(user) {

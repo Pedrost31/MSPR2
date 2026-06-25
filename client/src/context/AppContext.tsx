@@ -2,7 +2,8 @@ import {createContext, useContext,useEffect,useState} from 'react';
 import { initialState,type Credentials,type ActivityEntry, type FoodEntry, type User } from '../types';
 import { useNavigate } from 'react-router-dom';
 import  mockApi  from '../assets/mockApi';
-
+import { api } from '../services/api';
+import toast from "react-hot-toast";
 const AppContext = createContext(initialState);
 
 export const AppProvider = ({children}: {children: React.ReactNode}) => {
@@ -14,33 +15,87 @@ export const AppProvider = ({children}: {children: React.ReactNode}) => {
     const [allActivityLogs,setAllActivityLogs] = useState<ActivityEntry[]>([]);
     
 
-    const signup = async (credentials:Credentials)=> {
-    const {data} = await mockApi.auth.register(credentials)
-    
-    setUser(data.user)
-if (data?.user?.age && data?.user?.weight && data?.user?.goal) {
-    setOnboardingCompleted(true);
-}
-localStorage.setItem('token',data.jwt);
+  const signup = async (credentials: Credentials) => {
+  try {
+    const { data } = await api.post("/auth/register", {
+      name: credentials.username,
+      email: credentials.email,
+      password: credentials.password,
+    });
+
+    const authData = data.data;
+
+    setUser({
+      ...authData.user,
+      token: authData.accessToken,
+    });
+
+    localStorage.setItem("token", authData.accessToken);
+    localStorage.setItem("refreshToken", authData.refreshToken);
+
+    const user = authData.user;
+
+    if (user?.age && user?.weight && user?.goal) {
+      setOnboardingCompleted(true);
     }
 
-    const login = async (credentials:Credentials) => {
-        const {data} = await mockApi.auth.login(credentials)
-        setUser({...data.user, token: data.jwt})
-        if (data?.user?.age && data?.user?.weight && data?.user?.goal) {
-    setOnboardingCompleted(true);
-}
-localStorage.setItem('token',data.jwt);
+  } catch (error: any) {
+    toast.error(
+      error?.response?.data?.message || "Signup failed"
+    );
+    throw error;
+  }
+};
+const login = async (credentials: Credentials) => {
+  try {
+    const { data } = await api.post("/auth/login", {
+      email: credentials.email,
+      password: credentials.password,
+    });
+
+    const authData = data.data;
+
+    setUser({
+      ...authData.user,
+      token: authData.accessToken,
+    });
+
+    localStorage.setItem("token", authData.accessToken);
+    localStorage.setItem("refreshToken", authData.refreshToken);
+
+    const user = authData.user;
+
+    if (user?.age && user?.weight && user?.goal) {
+      setOnboardingCompleted(true);
     }
 
-const fetchUser = async (token:string) => {
-const {data}= await mockApi.user.me()
-setUser ({...data, token})
-if (data?.age && data?.weight && data?.goal) {
+  } catch (error: any) {
+    toast.error(
+      error?.response?.data?.message || "Login failed"
+    );
+    throw error;
+  }
+};
+const fetchUser = async (token: string) => {
+  const { data } = await api.get("/users/me", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const user = data.data;
+
+  setUser({
+    ...user,
+    token,
+  });
+
+  if (user?.age && user?.weight && user?.goal) {
     setOnboardingCompleted(true);
-}
-setIsUserFetched(true); 
-}
+  }
+
+  setIsUserFetched(true);
+};
 
 const fetchFoodLogs = async () => {
 const {data}= await mockApi.foodLogs.list()
