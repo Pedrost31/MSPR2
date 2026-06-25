@@ -1,0 +1,11 @@
+image_path,true_label,true_calories
+images/pomme_01.jpg,pomme,95
+images/banane_01.jpg,banane,105
+images/saumon_01.jpg,saumon,280
+images/poulet_01.jpg,poulet,335
+images/riz_01.jpg,riz,206
+images/salade_01.jpg,salade,150
+images/pizza_01.jpg,pizza,285
+images/pates_01.jpg,pates,220
+images/oeuf_01.jpg,oeuf,78
+images/pain_01.jpg,pain,265

@@ -15,7 +15,8 @@
     "db:seed": "ts-node src/prisma/seed.ts",
     "test": "jest --runInBand --forceExit",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage --forceExit"
+    "test:coverage": "jest --coverage --forceExit",
+    "openapi:export": "ts-node scripts/export-openapi.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

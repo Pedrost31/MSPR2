@@ -254,6 +254,91 @@ const options: swaggerJSDoc.Options = {
           responses: { 200: { description: 'Historique des recommandations IA (stockées dans MongoDB)' } },
         },
       },
+      '/ai/analyze-food-image': {
+        post: {
+          tags: ['AI'], summary: 'Analyser une photo de repas (microservice LLaVA, port 8001)',
+          description: 'Proxy vers le microservice de reconnaissance alimentaire. Le résultat est ' +
+            'enrichi via Open Food Facts / USDA quand le modèle n\'estime pas les calories.',
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: {
+              type: 'object', required: ['imageBase64'],
+              properties: { imageBase64: { type: 'string', description: 'Image JPEG encodée en base64 (sans préfixe data:)' } },
+            }}},
+          },
+          responses: {
+            200: { description: 'Analyse nutritionnelle (food_name, nutrition, ingrédients…)' },
+            429: { description: 'Trop de requêtes IA (60/heure max)' },
+            503: { description: 'Microservice IA indisponible (vérifier le port 8001)' },
+          },
+        },
+      },
+      '/ai/recipes/suggest': {
+        get: {
+          tags: ['AI'], summary: 'Suggérer 3 recettes selon le profil (microservice Llama3.2, port 8002)',
+          parameters: [{ name: 'mealType', in: 'query', required: true, schema: { type: 'string', enum: ['breakfast', 'lunch', 'dinner', 'snack'] } }],
+          responses: { 200: { description: 'Liste de recettes personnalisées' }, 429: { description: 'Trop de requêtes IA' } },
+        },
+      },
+      '/ai/recipes/generate': {
+        post: {
+          tags: ['AI'], summary: 'Générer une recette à partir d\'ingrédients (microservice Llama3.2)',
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: {
+              type: 'object', required: ['ingredients'],
+              properties: {
+                ingredients: { type: 'array', items: { type: 'string' }, example: ['œufs', 'épinards', 'fromage'] },
+                goal:        { type: 'string', description: 'Objectif optionnel (ex: "prise de muscle")' },
+              },
+            }}},
+          },
+          responses: { 200: { description: 'Recette générée' }, 429: { description: 'Trop de requêtes IA' } },
+        },
+      },
+      '/ai/diet/macros': {
+        get: {
+          tags: ['AI'], summary: 'Calculer BMR / TDEE / macros (microservice diététique, port 8003)',
+          description: 'Calcul déterministe (Mifflin-St Jeor) à partir du profil utilisateur, sans appel LLM.',
+          responses: { 200: { description: 'bmr, tdee, calories, protein_g, carbs_g, fat_g' }, 422: { description: 'Profil incomplet (poids/taille/âge requis)' } },
+        },
+      },
+      '/ai/diet/plan': {
+        get: {
+          tags: ['AI'], summary: 'Plan alimentaire hebdomadaire + liste de courses (Llama3.2)',
+          responses: { 200: { description: 'Plan sur 7 jours + macros + liste de courses' }, 429: { description: 'Trop de requêtes IA' } },
+        },
+      },
+      '/ai/diet/analyze': {
+        get: {
+          tags: ['AI'], summary: 'Analyse nutritionnelle des derniers jours (Llama3.2)',
+          parameters: [{ name: 'days', in: 'query', schema: { type: 'integer', default: 7, minimum: 1, maximum: 30 } }],
+          responses: { 200: { description: 'Bilan nutritionnel et conseils' }, 429: { description: 'Trop de requêtes IA' } },
+        },
+      },
+      '/ai/training/program': {
+        get: {
+          tags: ['AI'], summary: 'Programme d\'entraînement hebdomadaire (microservice sport, port 8004)',
+          responses: { 200: { description: 'Programme sur 7 jours adapté au profil' }, 429: { description: 'Trop de requêtes IA' } },
+        },
+      },
+      '/ai/training/quick-workout': {
+        post: {
+          tags: ['AI'], summary: 'Entraînement express (Llama3.2)',
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: {
+              type: 'object', required: ['workoutType', 'durationMin'],
+              properties: {
+                workoutType: { type: 'string', enum: ['cardio', 'strength', 'hiit', 'flexibility', 'yoga'] },
+                durationMin: { type: 'integer', example: 30, minimum: 10, maximum: 180 },
+                equipment:   { type: 'array', items: { type: 'string' }, example: [] },
+              },
+            }}},
+          },
+          responses: { 200: { description: 'Séance générée (phases + exercices)' }, 429: { description: 'Trop de requêtes IA' } },
+        },
+      },
     },
   },
   apis: [],
