@@ -1,4 +1,12 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types';
 export declare const getRecommendationController: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
+export declare const analyzeFoodImageController: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
+export declare const getRecipeSuggestionsController: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
+export declare const generateRecipeController: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
+export declare const getDietMacrosController: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
+export declare const getDietPlanController: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
+export declare const getDietAnalysisController: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
+export declare const getTrainingProgramController: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
+export declare const getQuickWorkoutController: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
 export declare const getRecommendationHistoryController: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;

@@ -1,13 +1,14 @@
-import {ActivityIcon,HomeIcon,MoonIcon,PersonStandingIcon,SettingsIcon, SunIcon, UserIcon, UtensilsIcon} from 'lucide-react';
+import {ActivityIcon,HomeIcon,MoonIcon,PersonStandingIcon, SparklesIcon, SunIcon, UserIcon, UtensilsIcon} from 'lucide-react';
 import {useTheme} from '../context/ThemeContext';
 import { NavLink } from 'react-router-dom';
 const Sidebar = () => {
 
     const navItems=[
-        {path:'/',icon:HomeIcon,label:'Home'},
-        {path:'/food-log', label: 'Food', icon: UtensilsIcon},
-        {path:'/activity-log',icon:ActivityIcon,label:'Activity'},
-        {path:'/profile',icon:UserIcon,label:'Profile'},
+        {path:'/',icon:HomeIcon,label:'Accueil'},
+        {path:'/food-log', label: 'Repas', icon: UtensilsIcon},
+        {path:'/activity-log',icon:ActivityIcon,label:'Activité'},
+        {path:'/coach',icon:SparklesIcon,label:'Coach'},
+        {path:'/profile',icon:UserIcon,label:'Profil'},
     ]
 
 
@@ -44,7 +45,7 @@ hover:text-slate-700 dark:hover:text-slate-200 rounded-lg transition-colors dura
     {theme === 'light' ? <MoonIcon className='size-5'/> : <SunIcon className='size-5'/>
     }
     <span className='text-base'>
-        {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+        {theme === 'light' ? 'Mode sombre' : 'Mode clair'}
 
     </span>
 

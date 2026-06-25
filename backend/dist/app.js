@@ -19,7 +19,14 @@ const app = (0, express_1.default)();
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)({ origin: env_1.env.CORS_ORIGIN, credentials: true }));
 // ── Body parsing ──────────────────────────────────────────────────────────────
-app.use(express_1.default.json({ limit: '10kb' }));
+// La route d'analyse d'image gère son propre parser (images base64 volumineuses),
+// on l'exclut donc de la limite globale de 10kb.
+const standardJson = express_1.default.json({ limit: '10kb' });
+app.use((req, res, next) => {
+    if (req.path === '/api/ai/analyze-food-image')
+        return next();
+    standardJson(req, res, next);
+});
 app.use(express_1.default.urlencoded({ extended: true }));
 // ── Logging ───────────────────────────────────────────────────────────────────
 app.use(logger_middleware_1.requestLogger);

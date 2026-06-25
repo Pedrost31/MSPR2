@@ -9,6 +9,10 @@ export declare const env: {
     readonly JWT_REFRESH_EXPIRES_IN: string;
     readonly OPENAI_API_KEY: string | undefined;
     readonly OPENAI_MODEL: string;
+    readonly AI_FOOD_SERVICE_URL: string;
+    readonly AI_RECIPE_SERVICE_URL: string;
+    readonly AI_DIET_SERVICE_URL: string;
+    readonly AI_TRAINING_SERVICE_URL: string;
     readonly CORS_ORIGIN: string;
     readonly RATE_LIMIT_WINDOW_MS: number;
     readonly RATE_LIMIT_MAX: number;

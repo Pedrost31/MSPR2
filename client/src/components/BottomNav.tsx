@@ -1,14 +1,14 @@
-import {ActivityIcon,HomeIcon,MoonIcon,PersonStandingIcon,SettingsIcon, SunIcon, UserIcon, UtensilsIcon} from 'lucide-react';
-import {useTheme} from '../context/ThemeContext';
+import {ActivityIcon,HomeIcon, SparklesIcon, UserIcon, UtensilsIcon} from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 
 const BottomNav = () => {
     const navItems = [
-     {path:'/',icon:HomeIcon,label:'Home'},
-        {path:'/food-log', label: 'Food', icon: UtensilsIcon},
-        {path:'/activity-log',icon:ActivityIcon,label:'Activity'},
-        {path:'/profile',icon:UserIcon,label:'Profile'},
+     {path:'/',icon:HomeIcon,label:'Accueil'},
+        {path:'/food-log', label: 'Repas', icon: UtensilsIcon},
+        {path:'/activity-log',icon:ActivityIcon,label:'Activité'},
+        {path:'/coach',icon:SparklesIcon,label:'Coach'},
+        {path:'/profile',icon:UserIcon,label:'Profil'},
     ]
     return (
 <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 px-4 pb-safe lg:hidden transition-colors duration-200">

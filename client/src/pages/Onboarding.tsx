@@ -15,7 +15,8 @@ import Select from "../components/ui/Select";
 import Button from "../components/ui/Button";
 import Slider from "../components/ui/Slider";
 import { api } from "../services/api";
-import { ageRanges, goalOptions } from "../assets/assets";
+import { mapUserFromApi } from "../services/mappers";
+import { goalOptions } from "../assets/assets";
 
 const Onboarding = () => {
   const [step, setStep] = useState(1);
@@ -41,38 +42,22 @@ const Onboarding = () => {
     }));
   };
 
-  // 🔥 CALCUL CALORIES (ton système gardé)
-  const calculateCalories = () => {
-    const age = Number(formData.age);
-
-    const range =
-      ageRanges.find((r) => age <= r.max) ||
-      ageRanges[ageRanges.length - 1];
-
-    let intake = range.maintain;
-
-    if (formData.goal === "lose") intake -= 400;
-    if (formData.goal === "gain") intake += 500;
-
-    return intake;
-  };
-
   const handleNext = async () => {
     if (step === 1) {
       if (!formData.age || formData.age < 13 || formData.age > 120) {
-        return toast.error("Valid age required");
+        return toast.error("Âge valide requis");
       }
       if (!formData.gender) {
-        return toast.error("Gender required");
+        return toast.error("Sexe requis");
       }
     }
 
     if (step === 2) {
       if (!formData.weight) {
-        return toast.error("Weight required");
+        return toast.error("Poids requis");
       }
       if (!formData.activityLevel) {
-        return toast.error("Activity level required");
+        return toast.error("Niveau d'activité requis");
       }
     }
 
@@ -89,21 +74,16 @@ const Onboarding = () => {
         height: formData.height || null,
         activityLevel: formData.activityLevel,
         goal: formData.goal,
-        dailyCalorieTarget: calculateCalories(),
+        dailyCalorieTarget: formData.dailyCalorieTarget,
       });
 
-      const updatedUser = data.data.user;
-
-      setUser({
-        ...updatedUser,
-        token: user?.token,
-      });
+      setUser(mapUserFromApi(data.data, user?.token));
 
       setOnboardingCompleted(true);
 
-      toast.success("Profile setup complete!");
+      toast.success("Profil configuré !");
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Update failed");
+      toast.error(error?.response?.data?.message || "Échec de la mise à jour");
     }
   };
 
@@ -126,7 +106,7 @@ const Onboarding = () => {
           </div>
 
           <p className="text-slate-500 dark:text-slate-400 mt-4">
-            Let's personalize your experience
+            Personnalisons votre expérience
           </p>
         </div>
 
@@ -146,7 +126,7 @@ const Onboarding = () => {
           </div>
 
           <p className="text-sm text-slate-400 mt-3">
-            Step {step} of {totalSteps}
+            Étape {step} sur {totalSteps}
           </p>
         </div>
 
@@ -161,30 +141,30 @@ const Onboarding = () => {
 
                 <div>
                   <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
-                   Tell us a little bit about yourself
+                   Parlez-nous un peu de vous
                   </h2>
 
                   <p className="text-slate-500 dark:text-slate-400 text-sm">
-                    This helps us to personalize your plan
+                    Cela nous aide à personnaliser votre plan
                   </p>
                 </div>
               </div>
 
             <Input
-              label="Age"
+              label="Âge"
               type="number"
               value={formData.age}
               onChange={(v) => updateField("age", v)}
             />
 
             <Select
-              label="Gender"
+              label="Sexe"
               value={formData.gender}
               onChange={(v) => updateField("gender", v)}
               options={[
-                { value: "male", label: "Male" },
-                { value: "female", label: "Female" },
-                { value: "other", label: "Other" },
+                { value: "male", label: "Homme" },
+                { value: "female", label: "Femme" },
+                { value: "other", label: "Autre" },
               ]}
             />
           </div>
@@ -200,40 +180,40 @@ const Onboarding = () => {
 
                 <div>
                   <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
-                    Let's get your stats
+                    Vos mensurations
                   </h2>
 
                   <p className="text-slate-500 dark:text-slate-400 text-sm">
-                    We'll use these to personalize your calorie targets
+                    Elles servent à personnaliser vos objectifs caloriques
                   </p>
                 </div>
               </div>
      <div className="flex flex-col gap-4 max-w-2xl">
 
             <Input
-              label="Weight (kg)"
+              label="Poids (kg)"
               type="number"
               value={formData.weight}
               onChange={(v) => updateField("weight", v)}
             />
 
             <Input
-              label="Height (cm)"
+              label="Taille (cm)"
               type="number"
               value={formData.height}
               onChange={(v) => updateField("height", v)}
             />
 
             <Select
-              label="Activity level"
+              label="Niveau d'activité"
               value={formData.activityLevel}
               onChange={(v) => updateField("activityLevel", v)}
               options={[
-                { value: "sedentary", label: "Sedentary" },
-                { value: "light", label: "Light" },
-                { value: "moderate", label: "Moderate" },
-                { value: "active", label: "Active" },
-                { value: "very_active", label: "Very active" },
+                { value: "sedentary", label: "Sédentaire" },
+                { value: "light", label: "Léger" },
+                { value: "moderate", label: "Modéré" },
+                { value: "active", label: "Actif" },
+                { value: "very_active", label: "Très actif" },
               ]}
             />
           </div>
@@ -250,11 +230,11 @@ const Onboarding = () => {
 
                 <div>
                   <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
-                    What's your goal?
+                    Quel est votre objectif ?
                   </h2>
 
                   <p className="text-slate-500 dark:text-slate-400 text-sm">
-                    We'll tailor your experience
+                    Nous adapterons votre expérience
                   </p>
                 </div>
               </div>
@@ -278,10 +258,10 @@ const Onboarding = () => {
             {/* DAILY TARGETS (RESTORED) */}
             <div className="border-t border-slate-200 dark:border-slate-700 my-6" />
 
-            <h3 className="text-md font-medium">Daily targets</h3>
+            <h3 className="text-md font-medium">Objectifs quotidiens</h3>
 
             <Slider
-              label="Daily Calorie Target"
+              label="Objectif calorique quotidien"
               min={1200}
               max={4000}
               step={50}
@@ -304,7 +284,7 @@ const Onboarding = () => {
               >
                 <span className="flex items-center gap-2">
                   <ArrowLeft className="w-5 h-5" />
-                  Back
+                  Retour
                 </span>
               </Button>
             )}
@@ -314,7 +294,7 @@ const Onboarding = () => {
               className="max-lg:flex-1 lg:px-10"
             >
               <span className="flex items-center gap-2">
-                {step === totalSteps ? "Get Started" : "Continue"}
+                {step === totalSteps ? "Commencer" : "Continuer"}
                 <ArrowRight className="w-5 h-5" />
               </span>
             </Button>

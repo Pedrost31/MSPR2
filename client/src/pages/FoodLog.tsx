@@ -1,13 +1,14 @@
-import React, {act, useEffect, useRef, useState} from 'react'; 
+import React, { useEffect, useRef, useState} from 'react'; 
 import {useAppContext} from '../context/AppContext';
 import type { FoodEntry,FormData } from '../types';
 import Card from '../components/ui/Card';
-import { mealColors, mealIcons, mealTypeOptions, quickActivitiesFoodLog } from '../assets/assets';
+import { mealColors, mealIcons, mealLabels, mealTypeOptions, quickActivitiesFoodLog } from '../assets/assets';
 import Button from '../components/ui/Button';
 import { Loader2Icon, PlusIcon, SparkleIcon, Trash2Icon, UtensilsCrossedIcon } from 'lucide-react';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
-import mockApi from '../assets/mockApi';
+import { foodService } from '../services/foodService';
+import { aiService, fileToCompressedBase64 } from '../services/aiService';
 import toast from 'react-hot-toast';
 
 
@@ -40,12 +41,15 @@ const groupedEntries : Record<'breakfast' | 'lunch' | 'dinner' | 'snack', FoodEn
 
 const handleSubmit = async (e:React.FormEvent) => {
     e.preventDefault()
-    const {data} = await mockApi.foodLogs.create({data:formData})
-setAllFoodLogs(prev => [...prev,data])
-setFormData({name:'', calories:0 , mealType: ''})
-setShowForm(false);
-
-
+    try {
+      const entry = await foodService.create(formData);
+      setAllFoodLogs(prev => [...prev, entry]);
+      setFormData({name:'', calories:0 , mealType: ''});
+      setShowForm(false);
+      toast.success('Repas ajouté');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Échec de l'ajout du repas");
+    }
 }
 
 
@@ -65,8 +69,44 @@ const handleQuickAdd = (activityName: string) =>{
 }
 const handleImageChange = async (e:React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    // On réinitialise l'input pour permettre de re-sélectionner la même image
+    e.target.value = '';
     if(!file) return;
-//Implement image Analysis
+
+    setLoading(true);
+    const toastId = toast.loading("Analyse de l'image en cours… (jusqu'à 1-2 min)");
+    try {
+        const imageBase64 = await fileToCompressedBase64(file);
+        const analysis = await aiService.analyzeFoodImage(imageBase64);
+
+        const detectedName = analysis.food_name?.trim();
+        const rawCalories = Number(analysis.nutrition?.calories);
+        const detectedCalories = Number.isFinite(rawCalories) ? Math.round(rawCalories) : 0;
+
+        if (!detectedName) {
+            toast.error("Aucun aliment reconnu. Essayez une autre photo.", { id: toastId });
+            return;
+        }
+
+        setFormData((prev) => ({
+            ...prev,
+            name: detectedName,
+            calories: detectedCalories,
+        }));
+        setShowForm(true);
+        if (detectedCalories > 0) {
+            toast.success(`Détecté : ${detectedName} (~${detectedCalories} kcal)`, { id: toastId });
+        } else {
+            toast(`Détecté : ${detectedName}. Calories non estimées, saisissez-les manuellement.`, { id: toastId });
+        }
+    } catch (error: any) {
+        toast.error(
+            error?.response?.data?.message || "Échec de l'analyse de l'image",
+            { id: toastId }
+        );
+    } finally {
+        setLoading(false);
+    }
 }
 
 
@@ -76,13 +116,14 @@ const handleImageChange = async (e:React.ChangeEvent<HTMLInputElement>) => {
 
 const handleDelete = async (documentId: string) => {
    try {
-    const confirm = window.confirm('Are you sure you want to delete this entry?');
+    const confirm = window.confirm('Voulez-vous vraiment supprimer cette entrée ?');
     if(!confirm) return;
-    await mockApi.foodLogs.delete(documentId);
+    await foodService.delete(documentId);
     setAllFoodLogs(prev => prev.filter((e: FoodEntry) => e.documentId !== documentId));
+    toast.success('Entrée supprimée');
     } catch (error: any) {
         console.error(error)
-        toast.error('Failed to delete entry. Please try again.')
+        toast.error('Échec de la suppression. Veuillez réessayer.')
 }
 }
 
@@ -98,14 +139,14 @@ useEffect(() => {
 <div className='page-header'>
 <div className="flex items-center justify-between">
 <div>
-    <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Food Log</h1>
+    <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Journal alimentaire</h1>
     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-        Track your daily intake
+        Suivez vos apports quotidiens
     </p>
 </div>
 <div className="text-right">
     <p className="text-sm text-slate-500 dark:text-slate-400">
-        Today's Total
+        Total du jour
     </p>
     <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
       {totalCalories}  kcal
@@ -121,7 +162,7 @@ useEffect(() => {
         <div className="space-y-4">
             <Card>
                 <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">
-Quick Add
+Ajout rapide
                 </h3>
                 <div className="flex flex-wrap gap-2">
 {quickActivitiesFoodLog.map((activity) => (
@@ -129,7 +170,7 @@ Quick Add
     className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 transition-colors
     "
     key={activity.name}>
-    {activity.emoji} {activity.name}
+    {activity.emoji} {activity.label}
     </button>
 ))}
                 </div>
@@ -140,11 +181,11 @@ Quick Add
 
 <Button className='w-full' onClick={()=>inputRef.current?.click()}>
     <SparkleIcon className='size-5' />
-    Ai Food Snap
+    Photo repas IA
 </Button>
-<input onChange={handleImageChange} accept="image/*" hidden ref={inputRef} />
+<input type="file" onChange={handleImageChange} accept="image/*" hidden ref={inputRef} />
 {loading && (
-    <div className="fixed instet-0 bg-slate-100/50 dark:bg-slate-900/50 backdrop-blur flex items-center justify-center z-100">
+    <div className="fixed inset-0 bg-slate-100/50 dark:bg-slate-900/50 backdrop-blur flex items-center justify-center z-100">
 <Loader2Icon className="size-8 text-emerald-600 dark:text-emerald-400 animate-spin"/>
 
     </div>
@@ -157,16 +198,16 @@ Quick Add
     <Card className="border-2 border-emerald-200 dark:border-emerald-800">
 
 <h3 className="font-semibold text-slate-800 dark:text-white mb-4">
-New food entry
+Nouveau repas
 </h3>
 <form className="space-y-4" onSubmit={handleSubmit}>
-    <Input label="Food Name"  value={formData.name} onChange={(v)=>setFormData({...formData, name: v.toString()})} placeholder="e.g.,Grilled Chicken Salad" required/>
+    <Input label="Nom de l'aliment"  value={formData.name} onChange={(v)=>setFormData({...formData, name: v.toString()})} placeholder="ex. : Salade de poulet grillé" required/>
 
-      <Input label="Calories" type="number"  value={formData.calories} onChange={(v)=>setFormData({...formData, calories: Number(v)})} placeholder="e.g.,350" required min={1}/>
+      <Input label="Calories" type="number"  value={formData.calories} onChange={(v)=>setFormData({...formData, calories: Number(v)})} placeholder="ex. : 350" required min={1}/>
 
-<Select label ="Meal Type" value={formData.mealType}
+<Select label ="Type de repas" value={formData.mealType}
 onChange={(v)=>setFormData({...formData, mealType : v.toString()})}
-options={mealTypeOptions} placeholder="Select meal type"
+options={mealTypeOptions} placeholder="Choisir un type de repas"
 required />
 
 
@@ -178,10 +219,10 @@ required />
         calories:0,
         mealType:''
     })}}>
-Cancel
+Annuler
     </Button> 
 <Button type="submit" className='flex-1'>
-Add Entry
+Ajouter
 </Button>
 
 </div>
@@ -198,9 +239,9 @@ Add Entry
 <UtensilsCrossedIcon className='size-8 text-slate-400 dark:text-slate-500'/>
 </div>
 <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-2">
-    No food logged today 
+    Aucun repas enregistré aujourd'hui
 </h3>
-<p className="text-slate-500 dark:text-slate-400 text-sm">Start tracking your meals tot stay on target
+<p className="text-slate-500 dark:text-slate-400 text-sm">Commencez à suivre vos repas pour rester sur la bonne voie
 
 </p>
 
@@ -222,10 +263,10 @@ return (
 <MealIcon className='size-5'/>
         </div>
 <div>
-    <h3 className="font-semibold text-slate-800 dark:text-white capitalize">
-        {mealType}
+    <h3 className="font-semibold text-slate-800 dark:text-white">
+        {mealLabels[mealTypeKey]}
     </h3>
-    <p>{groupedEntries[mealTypeKey].length} items</p>
+    <p>{groupedEntries[mealTypeKey].length} élément(s)</p>
 </div>
     </div>
     <p className="font-semibold text-slate-700 dark:text-slate-200">

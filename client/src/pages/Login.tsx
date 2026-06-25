@@ -43,21 +43,21 @@ import { Toaster } from 'react-hot-toast';
         <Toaster />
 <main className="login-page-container">
 <form onSubmit={handleSubmit} className="login-form">
-    <h2 className="text-3xl font-medium text-gray-900 dark:text-white"> {state === 'login' ? "Sign in" : "Sign up"}</h2>
+    <h2 className="text-3xl font-medium text-gray-900 dark:text-white"> {state === 'login' ? "Connexion" : "Inscription"}</h2>
     <p className="mt-2 text-sm text-gray-500/90 dark:text-gray-400">
-        {state === 'login' ? "Don't have an account?" : "Already have an account?"}
+        {state === 'login' ? "Pas encore de compte ?" : "Vous avez déjà un compte ?"}
     </p>
    
     {/* Username */}
     {state !== 'login' && (
         <div className="mt-4">
             <label className="font-medium text-sm text-gray-700 dark:text-gray-300">
-                Username
+                Nom d'utilisateur
             </label>
             <div className="relative mt-2">
                 <AtSignIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 size-4.5" />
                 <input onChange={(e)=>setUsername(e.target.value)} value={username}
-                type="text" placeholder="enter a username" className="login-input" required
+                type="text" placeholder="choisissez un nom d'utilisateur" className="login-input" required
                 />         
             </div>
                  
@@ -66,12 +66,12 @@ import { Toaster } from 'react-hot-toast';
  {/* Email */}
      <div className="mt-4">
             <label className="font-medium text-sm text-gray-700 dark:text-gray-300">
-                Email
+                E-mail
             </label>
             <div className="relative mt-2">
                 <MailIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 size-4.5" />
                 <input onChange={(e)=>setEmail(e.target.value)} value={email}
-                type="email" placeholder="enter your email" className="login-input" required
+                type="email" placeholder="saisissez votre e-mail" className="login-input" required
                 />         
             </div>
                  
@@ -80,14 +80,14 @@ import { Toaster } from 'react-hot-toast';
          {/* Password */}
      <div className="mt-4">
             <label className="font-medium text-sm text-gray-700 dark:text-gray-300">
-                Password
+                Mot de passe
             </label>
             <div className="relative mt-2">
                 <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 size-4.5" />
                <input
   onChange={(e)=>setPassword(e.target.value)}
   value={password}
-  placeholder="enter your password"
+  placeholder="saisissez votre mot de passe"
   className="login-input pr-10 appearance-none"
   required
   autoComplete="new-password"
@@ -106,18 +106,18 @@ import { Toaster } from 'react-hot-toast';
 
 
     <button type="submit" disabled={isSubmitting} className="login-button">
-       {isSubmitting ? "Signing in..." : state === 'login' ? "Sign in" : "Sign up"}
+       {isSubmitting ? "Connexion en cours..." : state === 'login' ? "Se connecter" : "S'inscrire"}
     </button>
 
 
 
         {state === 'login' ?
         (
-            <p className="text-center py-6 text-sm text-gray-500 dark:text-gray-400">Don't have an account? <button className="ml-1 cursor-pointer text-green-600 hover:underline" type="button" onClick={()=>setState('sign-up')}>Sign up</button></p> 
+            <p className="text-center py-6 text-sm text-gray-500 dark:text-gray-400">Pas encore de compte ? <button className="ml-1 cursor-pointer text-green-600 hover:underline" type="button" onClick={()=>setState('sign-up')}>S'inscrire</button></p> 
         )
     :
     (
-        <p className="text-center py-6 text-sm text-gray-500 dark:text-gray-400">Already have an account? <button className="ml-1 cursor-pointer text-green-600 hover:underline" type="button" onClick={()=>setState('login')}>Sign in</button></p>
+        <p className="text-center py-6 text-sm text-gray-500 dark:text-gray-400">Vous avez déjà un compte ? <button className="ml-1 cursor-pointer text-green-600 hover:underline" type="button" onClick={()=>setState('login')}>Se connecter</button></p>
     )}
     
     </form>

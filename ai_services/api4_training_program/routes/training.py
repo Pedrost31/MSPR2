@@ -1,5 +1,6 @@
 import uuid
 import time
+import json
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -51,7 +52,8 @@ async def get_training_program(user_id: str):
         )
         await save_recommendation(
             db, user_id, "activity",
-            f"Training program for goal={user.get('goal')}", str(program),
+            f"Training program for goal={user.get('goal')}",
+            json.dumps(program, ensure_ascii=False),
             settings.ollama_text_model,
         )
         return {

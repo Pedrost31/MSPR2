@@ -1,54 +1,48 @@
  import {useAppContext} from '../context/AppContext';   
 import { getMotivationalMessage } from '../assets/assets';
-import type { FoodEntry,ActivityEntry } from '../types';
-import {  useEffect, useState } from 'react';
  import Card from '../components/ui/Card';
 import ProgressBar from '../components/ui/ProgressBar'; 
 import {FlameIcon,ScaleIcon, HamburgerIcon,TrendingUpIcon,ActivityIcon, ZapIcon, RulerIcon} from 'lucide-react';
 import CaloriesChart from '../components/CaloriesChart';
+
  const Dashboard = () => {   
- const {user,allActivityLogs,allFoodLogs} = useAppContext();
- const [todayFood,setTodayFood]=useState<FoodEntry[]>([]);
- const [todayActivities,setTodayActivities]=useState<ActivityEntry[]>([]);
+const { user, allActivityLogs, allFoodLogs } = useAppContext();
 
+const DAILY_CALORIE_LIMIT = user?.dailyCalorieIntake || 2000;
 
- const DAILY_CALORIE_LIMIT: number = user?.dailyCalorieIntake || 2000;
- 
-// Load user data
-const loadUserData = () => {
-    const today = new Date().toISOString().split('T')[0];
-    const foodData = allFoodLogs.filter((f:FoodEntry)=> f.createdAt?.split('T') [0] === today)
-    setTodayFood(foodData)
+const totalCalories = allFoodLogs.reduce(
+  (sum, item) => sum + item.calories,
+  0
+);
 
- const activityData = allActivityLogs.filter((a:ActivityEntry)=> a.createdAt?.split('T') [0] === today)
- setTodayActivities(activityData)
-}
+const totalActiveMinutes = allActivityLogs.reduce(
+  (sum, item) => sum + item.duration,
+  0
+);
 
-useEffect(()=>{
-    (()=> {
-        loadUserData();
-    })();
-},[allFoodLogs,allActivityLogs])
-const totalCalories: number= todayFood.reduce((sum,item)=> sum + item.calories, 0);
-const remainingCalories : number = DAILY_CALORIE_LIMIT - totalCalories;
-const totalActiveMinutes: number = todayActivities.reduce((sum,item)=> sum + item.duration, 0);
-const totalBurned: number = todayActivities.reduce((sum,item)=> sum + (item.calories || 0),0);
+const totalBurned = allActivityLogs.reduce(
+  (sum, item) => sum + (item.calories || 0),
+  0
+);
 
+const remainingCalories =
+  DAILY_CALORIE_LIMIT - totalCalories;
 
-
- const motivation=getMotivationalMessage(totalCalories,totalActiveMinutes,DAILY_CALORIE_LIMIT);
- 
-  
+const motivation = getMotivationalMessage(
+  totalCalories,
+  totalActiveMinutes,
+  DAILY_CALORIE_LIMIT
+);
     return (
         <div className="page-container">
 { /* Header */ }
 <div className="dashboard-header">
     <p className='text-emerald-100 text-sm font-medium'>
-Welcome back
+Bon retour
     </p>
 
     <h1 className="text-2xl font-bold mt-1">
-{`Hi there!  ${user?.username}`}
+{`Bonjour ${user?.username} !`}
     </h1> 
 
     { /* Header */ }
@@ -75,12 +69,12 @@ Welcome back
        <HamburgerIcon className="w-6 h-6 text-orange-500"/> 
     </div>
     <div>
-<p className="text-sm text-slate-500 dark:text-slate-400">Calories consumed</p>
+<p className="text-sm text-slate-500 dark:text-slate-400">Calories consommées</p>
 <p className="text-2xl font-bold text-slate-800 dark:text-white">{totalCalories}</p>
     </div>
        </div> 
        <div className="text-right">
-        <p className="text-sm text-slate-500 dark:text-slate-400">Limit</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Limite</p>
         <p className="text-2xl font-bold text-slate-800 dark:text-white">{DAILY_CALORIE_LIMIT}</p>
     </div>
 </div>
@@ -89,7 +83,7 @@ Welcome back
 <div className=" mt-4 flex items-center justify-between">
   <div className={`px-3 py-1.5 rounded-lg ${remainingCalories >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-700 dark:text-emerald-400': 'bg-red-50 dark:bg-red-900/10 text-red-700 dark:text-red-400'}`}>
     <span className="text-sm font-medium">
-      {remainingCalories >=0 ? `${remainingCalories} kcal remaining` : `${Math.abs(remainingCalories)} kcal over`}
+      {remainingCalories >=0 ? `${remainingCalories} kcal restantes` : `${Math.abs(remainingCalories)} kcal en trop`}
     </span>
   </div>
 
@@ -105,12 +99,12 @@ Welcome back
        <FlameIcon className="w-6 h-6 text-orange-500"/> 
     </div>
     <div>
-<p className="text-sm text-slate-500 dark:text-slate-400">Calories Burned</p>
+<p className="text-sm text-slate-500 dark:text-slate-400">Calories brûlées</p>
 <p className="text-2xl font-bold text-slate-800 dark:text-white">{totalBurned}</p>
     </div>
        </div> 
        <div className="text-right">
-        <p className="text-sm text-slate-500 dark:text-slate-400">Goal</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Objectif</p>
         <p className="text-2xl font-bold text-slate-800 dark:text-white">{user?.dailyCalorieBurn || 400}</p>
     </div>
 </div>
@@ -128,10 +122,10 @@ Welcome back
     <ActivityIcon className='w-5 h-5 text-blue-500'/>
     
 </div>
-<p className="text-sm text-slate-500">Active</p>
+<p className="text-sm text-slate-500">Actif</p>
     </div>
     <p className="text-2xl font-bold text-slate-800 dark:text-white">{totalActiveMinutes}</p>
-    <p className="text-sm text-slate-400">minutes today</p>
+    <p className="text-sm text-slate-400">minutes aujourd'hui</p>
 </Card>
 
  { /*Activities Count */}
@@ -141,10 +135,10 @@ Welcome back
     <ZapIcon className='w-5 h-5 text-purple-500'/>
     
 </div>
-<p className="text-sm text-slate-500">Workouts</p>
+<p className="text-sm text-slate-500">Séances</p>
     </div>
-    <p className="text-2xl font-bold text-slate-800 dark:text-white">{todayActivities.length}</p>
-    <p className="text-sm text-slate-400">activities logged</p>
+    <p className="text-2xl font-bold text-slate-800 dark:text-white">{allActivityLogs.length}</p>
+    <p className="text-sm text-slate-400">activités enregistrées</p>
 </Card>
 
 </div>
@@ -157,11 +151,11 @@ Welcome back
 <TrendingUpIcon className='w-6 h-6 text-emerald-400'/>
             </div>
             <div>
-                <p className="text-slate-400 text-sm">Your goal</p>
-                <p className="text-white font-semibold capitalize">
-                    {user.goal === 'lose' && '🔥 Lose Weight'}
-{user.goal === 'maintain' && '⚖️ Maintain Weight'}
-{user.goal === 'gain' && '💪 Gain Muscle'}
+                <p className="text-slate-400 text-sm">Votre objectif</p>
+                <p className="text-white font-semibold">
+                    {user.goal === 'lose' && '🔥 Perdre du poids'}
+{user.goal === 'maintain' && '⚖️ Maintenir le poids'}
+{user.goal === 'gain' && '💪 Prendre du muscle'}
                 </p>
             </div>
         </div>
@@ -178,8 +172,8 @@ Welcome back
 <ScaleIcon className='w-6 h-6 text-indigo-500'/>
             </div>
 <div>
-    <h3 className="font-semibold text-slate-800 dark:text-white">Body Metrics</h3>
-<p className="text-slate-500 text-sm">Your stats</p>
+    <h3 className="font-semibold text-slate-800 dark:text-white">Mensurations</h3>
+<p className="text-slate-500 text-sm">Vos données</p>
 </div>
         </div>
         <div className="space-y-4">
@@ -189,7 +183,7 @@ Welcome back
     <ScaleIcon className="w-4 h-4 text-slate-500"/>
 </div>
 <span className="text-sm text-slate-500 dark:text-slate-400">
-    Wheight
+    Poids
 </span>
     </div>
 <span className="font-semibold text-slate-700 dark:text-slate-200">
@@ -203,7 +197,7 @@ Welcome back
     <RulerIcon className="w-4 h-4 text-slate-500"/>
 </div>
 <span className="text-sm text-slate-500 dark:text-slate-400">
-Height
+Taille
 </span>
     </div>
 <span className="font-semibold text-slate-700 dark:text-slate-200">
@@ -266,20 +260,20 @@ const getStatus = (b:number)=>{
  {/*Quick Summary */}
 
  <Card>
-    <h3 className="font-semibold text-slate-800 dark:text-white mb-4">Today's Summary</h3>
+    <h3 className="font-semibold text-slate-800 dark:text-white mb-4">Résumé du jour</h3>
  <div className="space-y-3">
     <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800">
         <span className="text-slate-500 dark:text-slate-400">
-            Meals logged
+            Repas enregistrés
 
         </span>
         <span className="font-medium text-slate-700 dark:text-slate-200">
-{todayFood.length}
+{allFoodLogs.length}
         </span>
     </div>
     <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800">
         <span className="text-slate-500 dark:text-slate-400">
-            Total Calories
+            Calories totales
 
         </span>
         <span className="font-medium text-slate-700 dark:text-slate-200">
@@ -289,7 +283,7 @@ const getStatus = (b:number)=>{
 
      <div className="flex justify-between items-center py-2">
         <span className="text-slate-500 dark:text-slate-400">
-            Active time
+            Temps actif
 
         </span>
         <span className="font-medium text-slate-700 dark:text-slate-200">
@@ -304,7 +298,7 @@ const getStatus = (b:number)=>{
 {/* Activity & Intake Graph */}
 <Card className="col-span-2">
 <h3 className="font-semibold text-slate-800 dark:text-white mb-2">
-This Week's Progress
+Progression de la semaine
 </h3>
 <CaloriesChart/>
 </Card>

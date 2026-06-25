@@ -7,7 +7,7 @@ import { quickActivities } from "../assets/assets";
 import { PlusIcon,DumbbellIcon,ActivityIcon, TimerIcon, Trash2Icon } from "lucide-react";
 import Input from "../components/ui/Input";
 import toast from 'react-hot-toast';
-import mockApi from '../assets/mockApi';
+import { activityService } from '../services/activityService';
 
 
  const ActivityLog = () => {   
@@ -39,17 +39,18 @@ const handleDurationChange = (val:string | number)=>{
 const handleSubmit = async (e:React.FormEvent)=>{
     e.preventDefault()
     if(!formData.name.trim() || formData.duration <=0){
-        return toast('Please enter valid data')
+        return toast('Veuillez saisir des données valides')
     }
     try{
-        const {data} = await mockApi.activityLogs.create({data:formData});
-        setAllActivityLogs(prev => [...prev,data])
+        const entry = await activityService.create(formData);
+        setAllActivityLogs(prev => [...prev, entry])
         setFormData ({name:'', duration:0,calories:0})
         setShowForm(false)
+        toast.success('Activité ajoutée')
     }
     catch (error:any){
         console.log(error);
-        toast.error(error?.message || "Failed to add activity")
+        toast.error(error?.message || "Échec de l'ajout de l'activité")
     }
 }
 
@@ -68,13 +69,14 @@ const handleQuickAdd = (activity: {name: string, rate: number})=>{
 
 const handleDelete = async (documentId: string) => {
    try {
-    const confirm = window.confirm('Are you sure you want to delete this entry?');
+    const confirm = window.confirm('Voulez-vous vraiment supprimer cette entrée ?');
     if(!confirm) return;
-    await mockApi.foodLogs.delete(documentId);
+    await activityService.delete(documentId);
     setAllActivityLogs(prev => prev.filter((e: ActivityEntry) => e.documentId !== documentId));
+    toast.success('Entrée supprimée');
     } catch (error: any) {
         console.error(error)
-        toast.error('Failed to delete entry. Please try again.')
+        toast.error('Échec de la suppression. Veuillez réessayer.')
 }
 }
 
@@ -92,14 +94,14 @@ const handleDelete = async (documentId: string) => {
 <div className='page-header'>
 <div className="flex items-center justify-between">
 <div>
-    <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Activity Log</h1>
+    <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Journal d'activité</h1>
     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-        Track your workouts
+        Suivez vos séances
     </p>
 </div>
 <div className="text-right">
     <p className="text-sm text-slate-500 dark:text-slate-400">
-       Active Total
+       Total actif
     </p>
     <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
       {totalMinutes}  min
@@ -113,7 +115,7 @@ const handleDelete = async (documentId: string) => {
 {!showForm && (
     <div className="space-y-4">
         <Card>
-            <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">Quick Add</h3>
+            <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">Ajout rapide</h3>
 <div className="flex flex-wrap gap-2">
     {quickActivities.map((activity)=>( 
 
@@ -130,22 +132,22 @@ const handleDelete = async (documentId: string) => {
         </Card>
         <Button className="w-full" onClick={()=>setShowForm(true)}>
             <PlusIcon className="size-5"/>
-            Add Custom Activity
+            Ajouter une activité
         </Button>
     </div>
 )}
 {/* Add Form */}
 {showForm &&(
     <Card className="border-2 border-blue-200 dark:border-blue-800">
-        <h3 className="font-semibold text-slate-800 dark:text-white mb-4">New activity</h3>
+        <h3 className="font-semibold text-slate-800 dark:text-white mb-4">Nouvelle activité</h3>
         <form className="space-y-4" onSubmit={handleSubmit}>
-<Input placeholder='e.g., Morning Run' label="Activity Name" required value={formData.name} onChange={(v)=>setFormData({...formData,name: v.toString()})}/>
+<Input placeholder='ex. : Course matinale' label="Nom de l'activité" required value={formData.name} onChange={(v)=>setFormData({...formData,name: v.toString()})}/>
 
 
 
 <div className="flex gap-4">
-<Input className="flex-1" placeholder='30' label="Duration (min)" type="number" required value={formData.duration}   min={1} max={300} onChange={handleDurationChange}/>
-<Input className="flex-1" placeholder='200' label="Calories Burned" type="number" required value={formData.calories}   min={1} max={2000} onChange={(v)=>setFormData({...formData,calories: Number(v)})}/>
+<Input className="flex-1" placeholder='30' label="Durée (min)" type="number" required value={formData.duration}   min={1} max={300} onChange={handleDurationChange}/>
+<Input className="flex-1" placeholder='200' label="Calories brûlées" type="number" required value={formData.calories}   min={1} max={2000} onChange={(v)=>setFormData({...formData,calories: Number(v)})}/>
 
 </div>
 
@@ -157,10 +159,10 @@ const handleDelete = async (documentId: string) => {
             setError('');
             setFormData({name:'',duration:0, calories: 0})
         }}>
-            Cancel
+            Annuler
         </Button>
  <Button type="submit" className="flex-1">
-            Add Activity
+            Ajouter
         </Button>
        </div>
        
@@ -176,8 +178,8 @@ const handleDelete = async (documentId: string) => {
     <DumbbellIcon className="w-8 h-8 text-slate-400 dark:text-slate-500"/>
 </div>
 
-<h3 className='font-semibold text-slate-700 dark:text-slate-200 mb-2'>No activities logged today</h3>
-<p className="text-slate-500 dark:text-slate-400 text-sm">Start moving and track your progress</p>
+<h3 className='font-semibold text-slate-700 dark:text-slate-200 mb-2'>Aucune activité enregistrée aujourd'hui</h3>
+<p className="text-slate-500 dark:text-slate-400 text-sm">Bougez et suivez votre progression</p>
 </Card>
  ): (
     <Card>
@@ -188,10 +190,10 @@ const handleDelete = async (documentId: string) => {
     
         </div>
         <div>        <h3 className='font-semibold text-slate-800 dark:text-white'>
-Today's Activies           
+Activités du jour
         </h3>
         <p className='text-sm text-slate-500 dark:text-slate-400'>
-            {activities.length} logged
+            {activities.length} enregistrée(s)
         </p>
         </div>
         </div>
@@ -206,7 +208,7 @@ Today's Activies
 </div>
 <div>
 <p className="font-medium text-slate-700 dark:text-slate-200">{activity.name}</p>
-<p className="text-sm text-slate-400">{new Date(activity?.createdAt || '').toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</p>
+<p className="text-sm text-slate-400">{new Date(activity?.createdAt || '').toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</p>
 </div>
 </div>
 <div className="flex items-center gap-3">
@@ -237,7 +239,7 @@ Today's Activies
 
 
 <span className="text-slate-500 dark:text-slate-400">
-    Total Active Time
+    Temps actif total
 </span>
 <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
     {totalMinutes} minutes

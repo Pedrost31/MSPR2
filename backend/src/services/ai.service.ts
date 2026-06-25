@@ -120,6 +120,132 @@ export const generateRecommendation = async (input: {
   }
 };
 
+export const analyzeFoodImage = async (userId: string, imageBase64: string) => {
+  const requestId = crypto.randomUUID();
+  const t0 = Date.now();
+
+  const safeLog = (entry: Record<string, unknown>) =>
+    AILog.create({ userId, requestId, service: 'food-recognition', ...entry }).catch(() => undefined);
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5 * 60 * 1000);
+
+    let response: Response;
+    try {
+      response = await fetch(`${env.AI_FOOD_SERVICE_URL}/api/v1/food/analyze-image`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_base64: imageBase64, user_id: userId }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      throw new AppError(
+        `Service d'analyse d'image indisponible (${response.status}) ${detail}`.trim(),
+        502,
+      );
+    }
+
+    const data = (await response.json()) as {
+      request_id?: string;
+      analysis: unknown;
+      latency_ms?: number;
+    };
+
+    await safeLog({
+      status: 'success',
+      input: { type: 'image_analysis' },
+      output: JSON.stringify(data.analysis),
+      latencyMs: Date.now() - t0,
+    });
+
+    return data;
+  } catch (err) {
+    await safeLog({
+      status: 'error',
+      input: { type: 'image_analysis' },
+      error: err instanceof Error ? err.message : 'Erreur inconnue',
+      latencyMs: Date.now() - t0,
+    });
+
+    if (err instanceof AppError) throw err;
+    throw new AppError(
+      "Impossible d'analyser l'image. Vérifiez que le service IA (port 8001) est démarré.",
+      503,
+    );
+  }
+};
+
+// ── Proxy générique vers les microservices IA (FastAPI) ─────────────────────────
+const callAiService = async (
+  url: string,
+  errorContext: string,
+  options: { method?: 'GET' | 'POST'; body?: unknown } = {},
+) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4 * 60 * 1000);
+
+  try {
+    const response = await fetch(url, {
+      method: options.method ?? 'GET',
+      headers: options.body ? { 'Content-Type': 'application/json' } : undefined,
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      // 404 = profil utilisateur introuvable, 422 = profil incomplet → on remonte tel quel
+      const status = response.status === 404 || response.status === 422 ? response.status : 502;
+      throw new AppError(`${errorContext} : ${detail || `erreur ${response.status}`}`, status);
+    }
+
+    return await response.json();
+  } catch (err) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(`${errorContext} : service IA injoignable.`, 503);
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+export const getRecipeSuggestions = (userId: string, mealType: string) =>
+  callAiService(
+    `${env.AI_RECIPE_SERVICE_URL}/api/v2/recipes/suggest/${userId}?meal_type=${mealType}`,
+    'Suggestions de recettes',
+  );
+
+export const generateRecipeFromIngredients = (userId: string, ingredients: string[], goal: string) =>
+  callAiService(
+    `${env.AI_RECIPE_SERVICE_URL}/api/v2/recipes/generate`,
+    'Génération de recette',
+    { method: 'POST', body: { user_id: userId, ingredients, goal } },
+  );
+
+export const getDietMacros = (userId: string) =>
+  callAiService(`${env.AI_DIET_SERVICE_URL}/api/v3/diet/macros/${userId}`, 'Calcul des macros');
+
+export const getDietPlan = (userId: string) =>
+  callAiService(`${env.AI_DIET_SERVICE_URL}/api/v3/diet/plan/${userId}`, 'Plan alimentaire');
+
+export const getDietAnalysis = (userId: string, days: number) =>
+  callAiService(`${env.AI_DIET_SERVICE_URL}/api/v3/diet/analyze/${userId}?days=${days}`, 'Analyse nutritionnelle');
+
+export const getTrainingProgram = (userId: string) =>
+  callAiService(`${env.AI_TRAINING_SERVICE_URL}/api/v4/training/program/${userId}`, "Programme d'entraînement");
+
+export const getQuickWorkout = (workoutType: string, durationMin: number, equipment: string[]) =>
+  callAiService(
+    `${env.AI_TRAINING_SERVICE_URL}/api/v4/training/quick-workout`,
+    'Entraînement express',
+    { method: 'POST', body: { workout_type: workoutType, duration_min: durationMin, equipment } },
+  );
+
 export const getRecommendationHistory = async (userId: string, type?: string, limit = 10) => {
   const filter: Record<string, unknown> = { userId };
   if (type) filter['type'] = type;

@@ -1,6 +1,8 @@
 import uuid
 import time
 import base64
+import json
+import re
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel, field_validator
 
@@ -9,6 +11,61 @@ from shared.mongodb import get_db, save_ai_log, save_recommendation
 from config import settings
 
 router = APIRouter()
+
+_NUTRITION_KEYS = ("calories", "protein_g", "carbs_g", "fat_g", "fiber_g")
+
+
+def _to_float(value):
+    """Convertit une valeur (nombre, '350', '12,5 g', None…) en float ou None."""
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    match = re.search(r"-?\d+(?:[.,]\d+)?", str(value))
+    if not match:
+        return None
+    try:
+        return float(match.group().replace(",", "."))
+    except ValueError:
+        return None
+
+
+def _normalize_nutrition(nutrition: dict | None) -> dict:
+    """Force toutes les valeurs nutritionnelles en nombres (ou None)."""
+    nutrition = nutrition or {}
+    return {key: _to_float(nutrition.get(key)) for key in _NUTRITION_KEYS}
+
+
+async def _enrich_nutrition(result: dict) -> dict:
+    """LLaVA reconnaît bien l'aliment mais estime mal (voire pas) les calories.
+    Quand la nutrition est absente ou nulle, on la complète via Open Food Facts
+    puis USDA à partir du nom détecté (valeurs pour 100 g)."""
+    nutrition = _normalize_nutrition(result.get("nutrition"))
+    calories = nutrition.get("calories")
+
+    if calories and calories > 0:
+        result["nutrition"] = nutrition
+        return result
+
+    food_name = (result.get("food_name") or "").strip()
+    if food_name:
+        for lookup in (openfoodfacts_service.search_food, usda_service.search_food_usda):
+            try:
+                hits = await lookup(food_name, page_size=5)
+            except Exception:
+                hits = []
+            for hit in hits:
+                per_100g = _normalize_nutrition(hit.get("nutrition_per_100g"))
+                if per_100g.get("calories"):
+                    result["nutrition"] = per_100g
+                    result["nutrition_basis"] = f"pour 100 g (source : {hit.get('source')})"
+                    return result
+
+    # Aucune source : on renvoie au moins des nombres propres (évite les NaN côté front).
+    result["nutrition"] = nutrition
+    return result
 
 
 class AnalyzeImageRequest(BaseModel):
@@ -35,6 +92,7 @@ async def analyze_image(request: AnalyzeImageRequest):
 
     try:
         result = await ollama_service.analyze_food_image(request.image_base64)
+        result = await _enrich_nutrition(result)
         latency_ms = int((time.time() - t0) * 1000)
 
         await save_ai_log(
@@ -44,7 +102,8 @@ async def analyze_image(request: AnalyzeImageRequest):
         )
         await save_recommendation(
             db, request.user_id, "nutrition",
-            "Image food analysis", str(result),
+            "Image food analysis",
+            json.dumps(result, ensure_ascii=False),
             settings.ollama_vision_model,
         )
         return {"request_id": request_id, "analysis": result, "latency_ms": latency_ms}

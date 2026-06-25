@@ -13,7 +13,7 @@ const CaloriesChart = () => {
             const date = new Date(today);
             date.setDate(today.getDate() - i);
             const dateString = date.toISOString().split('T')[0];
-            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+            const dayName = date.toLocaleDateString('fr-FR', { weekday: 'short' });
 
             const dailyFood = allFoodLogs.filter(log => log.createdAt?.split('T')[0] === dateString);
             const dailyActivity = allActivityLogs.filter(log => log.createdAt?.split('T')[0] === dateString);
@@ -23,8 +23,8 @@ const CaloriesChart = () => {
 
             data.push({
                 name: dayName,
-                Intake: intake,
-                Burn: burn,
+                Apports: intake,
+                "Dépense": burn,
                 date: dateString
             });
         }
@@ -42,8 +42,8 @@ const CaloriesChart = () => {
                     <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} className="dark:text-slate-400" />
                     <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                     <Legend iconType="circle" wrapperStyle={{ paddingTop: '10px' }} />
-                    <Bar dataKey="Intake" fill="#10b981" radius={[4, 4, 0, 0]} barSize={12} name="Intake" />
-                    <Bar dataKey="Burn" fill="#f97316" radius={[4, 4, 0, 0]} barSize={12} name="Burn" />
+                    <Bar dataKey="Apports" fill="#10b981" radius={[4, 4, 0, 0]} barSize={12} name="Apports" />
+                    <Bar dataKey="Dépense" fill="#f97316" radius={[4, 4, 0, 0]} barSize={12} name="Dépense" />
                 </BarChart>
             </ResponsiveContainer>
         </div>

@@ -1,5 +1,6 @@
 import uuid
 import time
+import json
 from typing import Literal
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
@@ -59,7 +60,9 @@ async def suggest_recipes(
             output=str(result), latency_ms=latency_ms,
         )
         await save_recommendation(
-            db, user_id, "nutrition", str(result), str(result),
+            db, user_id, "nutrition",
+            f"Suggestions de recettes ({meal_label})",
+            json.dumps(result, ensure_ascii=False),
             settings.ollama_text_model,
         )
         return {

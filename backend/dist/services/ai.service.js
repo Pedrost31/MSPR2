@@ -36,12 +36,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRecommendationHistory = exports.generateRecommendation = void 0;
+exports.getRecommendationHistory = exports.getQuickWorkout = exports.getTrainingProgram = exports.getDietAnalysis = exports.getDietPlan = exports.getDietMacros = exports.generateRecipeFromIngredients = exports.getRecipeSuggestions = exports.analyzeFoodImage = exports.generateRecommendation = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 const database_1 = require("../config/database");
 const Recommendation_1 = require("../models/Recommendation");
 const AILog_1 = require("../models/AILog");
 const env_1 = require("../config/env");
+const error_middleware_1 = require("../middlewares/error.middleware");
 const buildPrompt = (profile, type, context) => {
     const lines = [
         `Nom : ${profile.name}`,
@@ -108,7 +109,7 @@ const generateRecommendation = async (input) => {
         select: { name: true, age: true, weight: true, height: true, gender: true, activityLevel: true, goal: true, dailyCalorieTarget: true },
     });
     if (!user)
-        throw new Error('Utilisateur introuvable');
+        throw new error_middleware_1.AppError('Utilisateur introuvable', 404);
     const prompt = buildPrompt(user, type, context);
     try {
         const result = await callOpenAI(prompt, type);
@@ -133,6 +134,93 @@ const generateRecommendation = async (input) => {
     }
 };
 exports.generateRecommendation = generateRecommendation;
+const analyzeFoodImage = async (userId, imageBase64) => {
+    const requestId = crypto_1.default.randomUUID();
+    const t0 = Date.now();
+    const safeLog = (entry) => AILog_1.AILog.create({ userId, requestId, service: 'food-recognition', ...entry }).catch(() => undefined);
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5 * 60 * 1000);
+        let response;
+        try {
+            response = await fetch(`${env_1.env.AI_FOOD_SERVICE_URL}/api/v1/food/analyze-image`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image_base64: imageBase64, user_id: userId }),
+                signal: controller.signal,
+            });
+        }
+        finally {
+            clearTimeout(timeout);
+        }
+        if (!response.ok) {
+            const detail = await response.text().catch(() => '');
+            throw new error_middleware_1.AppError(`Service d'analyse d'image indisponible (${response.status}) ${detail}`.trim(), 502);
+        }
+        const data = (await response.json());
+        await safeLog({
+            status: 'success',
+            input: { type: 'image_analysis' },
+            output: JSON.stringify(data.analysis),
+            latencyMs: Date.now() - t0,
+        });
+        return data;
+    }
+    catch (err) {
+        await safeLog({
+            status: 'error',
+            input: { type: 'image_analysis' },
+            error: err instanceof Error ? err.message : 'Erreur inconnue',
+            latencyMs: Date.now() - t0,
+        });
+        if (err instanceof error_middleware_1.AppError)
+            throw err;
+        throw new error_middleware_1.AppError("Impossible d'analyser l'image. Vérifiez que le service IA (port 8001) est démarré.", 503);
+    }
+};
+exports.analyzeFoodImage = analyzeFoodImage;
+// ── Proxy générique vers les microservices IA (FastAPI) ─────────────────────────
+const callAiService = async (url, errorContext, options = {}) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4 * 60 * 1000);
+    try {
+        const response = await fetch(url, {
+            method: options.method ?? 'GET',
+            headers: options.body ? { 'Content-Type': 'application/json' } : undefined,
+            body: options.body ? JSON.stringify(options.body) : undefined,
+            signal: controller.signal,
+        });
+        if (!response.ok) {
+            const detail = await response.text().catch(() => '');
+            // 404 = profil utilisateur introuvable, 422 = profil incomplet → on remonte tel quel
+            const status = response.status === 404 || response.status === 422 ? response.status : 502;
+            throw new error_middleware_1.AppError(`${errorContext} : ${detail || `erreur ${response.status}`}`, status);
+        }
+        return await response.json();
+    }
+    catch (err) {
+        if (err instanceof error_middleware_1.AppError)
+            throw err;
+        throw new error_middleware_1.AppError(`${errorContext} : service IA injoignable.`, 503);
+    }
+    finally {
+        clearTimeout(timeout);
+    }
+};
+const getRecipeSuggestions = (userId, mealType) => callAiService(`${env_1.env.AI_RECIPE_SERVICE_URL}/api/v2/recipes/suggest/${userId}?meal_type=${mealType}`, 'Suggestions de recettes');
+exports.getRecipeSuggestions = getRecipeSuggestions;
+const generateRecipeFromIngredients = (userId, ingredients, goal) => callAiService(`${env_1.env.AI_RECIPE_SERVICE_URL}/api/v2/recipes/generate`, 'Génération de recette', { method: 'POST', body: { user_id: userId, ingredients, goal } });
+exports.generateRecipeFromIngredients = generateRecipeFromIngredients;
+const getDietMacros = (userId) => callAiService(`${env_1.env.AI_DIET_SERVICE_URL}/api/v3/diet/macros/${userId}`, 'Calcul des macros');
+exports.getDietMacros = getDietMacros;
+const getDietPlan = (userId) => callAiService(`${env_1.env.AI_DIET_SERVICE_URL}/api/v3/diet/plan/${userId}`, 'Plan alimentaire');
+exports.getDietPlan = getDietPlan;
+const getDietAnalysis = (userId, days) => callAiService(`${env_1.env.AI_DIET_SERVICE_URL}/api/v3/diet/analyze/${userId}?days=${days}`, 'Analyse nutritionnelle');
+exports.getDietAnalysis = getDietAnalysis;
+const getTrainingProgram = (userId) => callAiService(`${env_1.env.AI_TRAINING_SERVICE_URL}/api/v4/training/program/${userId}`, "Programme d'entraînement");
+exports.getTrainingProgram = getTrainingProgram;
+const getQuickWorkout = (workoutType, durationMin, equipment) => callAiService(`${env_1.env.AI_TRAINING_SERVICE_URL}/api/v4/training/quick-workout`, 'Entraînement express', { method: 'POST', body: { workout_type: workoutType, duration_min: durationMin, equipment } });
+exports.getQuickWorkout = getQuickWorkout;
 const getRecommendationHistory = async (userId, type, limit = 10) => {
     const filter = { userId };
     if (type)

@@ -49,26 +49,33 @@ export const dummyActivityLogs: ActivityEntry[] = [
 ];
 
 export const quickActivities = [
-    { name: "Walking", emoji: "🚶", rate: 5 },
-    { name: "Running", emoji: "🏃", rate: 11 },
-    { name: "Cycling", emoji: "🚴", rate: 8 },
-    { name: "Swimming", emoji: "🏊", rate: 10 },
+    { name: "Marche", emoji: "🚶", rate: 5 },
+    { name: "Course", emoji: "🏃", rate: 11 },
+    { name: "Vélo", emoji: "🚴", rate: 8 },
+    { name: "Natation", emoji: "🏊", rate: 10 },
     { name: "Yoga", emoji: "🧘", rate: 4 },
-    { name: "Weight Training", emoji: "🏋️", rate: 6 },
+    { name: "Musculation", emoji: "🏋️", rate: 6 },
 ];
 
 export const mealTypeOptions = [
-    { value: "breakfast", label: "🌅 Breakfast" },
-    { value: "lunch", label: "☀️ Lunch" },
-    { value: "dinner", label: "🌙 Dinner" },
-    { value: "snack", label: "🍪 Snack" },
+    { value: "breakfast", label: "🌅 Petit-déjeuner" },
+    { value: "lunch", label: "☀️ Déjeuner" },
+    { value: "dinner", label: "🌙 Dîner" },
+    { value: "snack", label: "🍪 Collation" },
 ];
 
+export const mealLabels: Record<"breakfast" | "lunch" | "dinner" | "snack", string> = {
+    breakfast: "Petit-déjeuner",
+    lunch: "Déjeuner",
+    dinner: "Dîner",
+    snack: "Collation",
+};
+
 export const quickActivitiesFoodLog = [
-    { name: "breakfast", emoji: "🌮" },
-    { name: "lunch", emoji: "🌅" },
-    { name: "dinner", emoji: "🌙" },
-    { name: "snack", emoji: "🍪" },
+    { name: "breakfast", label: "Petit-déjeuner", emoji: "🌮" },
+    { name: "lunch", label: "Déjeuner", emoji: "🌅" },
+    { name: "dinner", label: "Dîner", emoji: "🌙" },
+    { name: "snack", label: "Collation", emoji: "🍪" },
 ];
 
 export const mealColors = {
@@ -86,15 +93,15 @@ export const mealIcons = {
 };
 
 export const goalOptions = [
-    { value: "lose", label: "Lose Weight" },
-    { value: "maintain", label: "Maintain Weight" },
-    { value: "gain", label: "Gain Muscle" },
+    { value: "lose", label: "Perdre du poids" },
+    { value: "maintain", label: "Maintenir le poids" },
+    { value: "gain", label: "Prendre du muscle" },
 ];
 
 export const goalLabels = {
-    lose: "Lose Weight",
-    maintain: "Maintain Weight",
-    gain: "Gain Muscle",
+    lose: "Perdre du poids",
+    maintain: "Maintenir le poids",
+    gain: "Prendre du muscle",
 };
 
 export const ageRanges = [
@@ -126,19 +133,19 @@ export const getMotivationalMessage = (caloriesConsumed: number, activeMinutes: 
     const percentage = (caloriesConsumed / DAILY_CALORIE_LIMIT) * 100;
 
     if (caloriesConsumed === 0 && activeMinutes === 0) {
-        return { text: "Ready to crush today? Start logging!", emoji: "💪" };
+        return { text: "Prêt à tout déchirer aujourd'hui ? Commencez à enregistrer !", emoji: "💪" };
     }
     if (percentage > 100) {
-        return { text: "Over limit, but tomorrow is a new day!", emoji: "🌅" };
+        return { text: "Limite dépassée, mais demain est un nouveau jour !", emoji: "🌅" };
     }
     if (percentage >= 80) {
-        return { text: "Almost at your limit, stay mindful!", emoji: "⚡" };
+        return { text: "Presque à votre limite, restez attentif !", emoji: "⚡" };
     }
     if (activeMinutes >= 30) {
-        return { text: "Great workout today! Keep it up!", emoji: "🔥" };
+        return { text: "Belle séance aujourd'hui ! Continuez comme ça !", emoji: "🔥" };
     }
     if (percentage >= 50) {
-        return { text: "You're doing great, keep going!", emoji: "✨" };
+        return { text: "Vous vous débrouillez très bien, continuez !", emoji: "✨" };
     }
-    return { text: "Every step counts. You've got this!", emoji: "🚀" };
+    return { text: "Chaque pas compte. Vous allez y arriver !", emoji: "🚀" };
 };

@@ -1,5 +1,6 @@
 import uuid
 import time
+import json
 from fastapi import APIRouter, HTTPException
 
 from services import ollama_service
@@ -55,7 +56,8 @@ async def get_diet_plan(user_id: str):
             output=str(plan), latency_ms=latency_ms,
         )
         await save_recommendation(
-            db, user_id, "nutrition", f"Diet plan for goal={user.get('goal')}", str(plan),
+            db, user_id, "nutrition", f"Diet plan for goal={user.get('goal')}",
+            json.dumps(plan, ensure_ascii=False),
             settings.ollama_text_model,
         )
         return {

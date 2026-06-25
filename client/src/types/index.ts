@@ -63,7 +63,7 @@ export interface FoodEntry {
 
 // Activity Entry
 export interface ActivityEntry {
-    id: number;
+    id: number | string;
     name: string;
     duration: number;
     calories: number;
@@ -79,13 +79,15 @@ export type AppContextType = {
     signup: (credentials: Credentials) => Promise<void>;
     fetchUser: (token: string) => Promise<void>;
     isUserFetched: boolean;
-    logout: () => void;
+    logout: () => void | Promise<void>;
     onboardingCompleted: boolean;
     setOnboardingCompleted: React.Dispatch<React.SetStateAction<boolean>>;
     allFoodLogs: FoodEntry[];
     setAllFoodLogs: React.Dispatch<React.SetStateAction<FoodEntry[]>>;
     allActivityLogs: ActivityEntry[];
     setAllActivityLogs: React.Dispatch<React.SetStateAction<ActivityEntry[]>>;
+    updateCalorieGoals: (goals: { intake?: number; burn?: number }) => Promise<void>;
+    deleteAccount: () => Promise<void>;
 };
 
 export const initialState: AppContextType = {
@@ -102,4 +104,6 @@ export const initialState: AppContextType = {
     setAllFoodLogs: () => {},
     allActivityLogs: [],
     setAllActivityLogs: () => {},
+    updateCalorieGoals: async () => {},
+    deleteAccount: async () => {},
 };
